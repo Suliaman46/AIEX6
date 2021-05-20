@@ -4,11 +4,13 @@ from sklearn.ensemble   import RandomForestClassifier
 from sklearn.metrics import precision_score, recall_score, roc_auc_score, roc_curve, f1_score, accuracy_score
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from sklearn.linear_model import SGDClassifier
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble   import GradientBoostingClassifier
+from sklearn.model_selection import ParameterGrid
 import time
-# import itertools
+import parfit.parfit as pf
 
 
 
@@ -35,10 +37,10 @@ def evaluate_model(predictions, prediction_probs,validLabel):
             f' Validation Test - {metric.capitalize()} : {round(results[metric], 2)}')
 
     # Confusion matrix
-    cm = confusion_matrix(validLabel, predictions)
-    disp = ConfusionMatrixDisplay(confusion_matrix = cm, display_labels= ['Healthy','Cancer'])
-    disp.plot()
-    plt.show()
+    # cm = confusion_matrix(validLabel, predictions)
+    # disp = ConfusionMatrixDisplay(confusion_matrix = cm, display_labels= ['Healthy','Cancer'])
+    # disp.plot()
+    # plt.show()
 
 def run_T_V_model(model,trainLabel,trainData,validLabel,validData):
     model.fit(trainData, trainLabel.ravel())
@@ -58,12 +60,38 @@ trainData    =  np.array(rawTrainData)
 validLabel   =  np.array(rawValidLabel)
 validData    =  np.array(rawValidData)
 
-
+print('\n RANDOM FOREST')
 randomForest    =   RandomForestClassifier(n_estimators=60,min_samples_split=5,max_leaf_nodes=11,max_features='sqrt',max_depth=12,bootstrap=False,random_state=50)
 run_T_V_model(randomForest,trainLabel,trainData,validLabel,validData)
-
+print('\n GRADIENT BOOSTING')
 gradientBoost    =   GradientBoostingClassifier(subsample= 0.94, n_estimators= 192, min_samples_split= 2, min_samples_leaf= 0.24545454545454548, max_features= 'log2', max_depth= 8, loss='deviance', learning_rate= 0.1, criterion= 'friedman_mse',random_state=50)
 run_T_V_model(gradientBoost,trainLabel,trainData,validLabel,validData)
+
+print('\n SGD Classifier')
+model = SGDClassifier(alpha=1413.7931034482758, loss='modified_huber',
+              n_iter_no_change=1000, n_jobs=-1, random_state=103)
+run_T_V_model(model,trainLabel,trainData,validLabel,validData)
+
+
+# grid = {
+#     # 'alpha': [1e-4, 1e-3, 1e-2, 1e-1, 1e0, 1e1, 1e2, 1e3,1.5*1e3,2*1e3], # learning rate
+#     # 'alpha':np.linspace(1413,1414,30), # learning rate
+#     'alpha':np.linspace(0.9,1.1,30), # learning rate
+#     'n_iter_no_change': [1000], # number of epochs
+#     'loss': ['modified_huber'], # logistic regression,
+#     'penalty': ['l2'],
+#     'n_jobs': [-1],
+#     # 'random_state':np.linspace(50,60,10).astype(int)
+#     'random_state':[103]
+# }
+# paramGrid = ParameterGrid(grid)
+#
+# bestModel, bestScore, allModels, allScores = pf.bestFit(SGDClassifier, paramGrid,
+#            trainData, trainLabel, validData, validLabel,
+#            metric = f1_score,
+#            scoreLabel = "f1")
+#
+# print(bestModel, bestScore)
 
 
 print(f'Time:{time.time() - start}')
