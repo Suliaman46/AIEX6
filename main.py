@@ -37,10 +37,10 @@ def evaluate_model(predictions, prediction_probs,validLabel):
             f' Validation Test - {metric.capitalize()} : {round(results[metric], 2)}')
 
     # Confusion matrix
-    # cm = confusion_matrix(validLabel, predictions)
-    # disp = ConfusionMatrixDisplay(confusion_matrix = cm, display_labels= ['Healthy','Cancer'])
-    # disp.plot()
-    # plt.show()
+    cm = confusion_matrix(validLabel, predictions)
+    disp = ConfusionMatrixDisplay(confusion_matrix = cm, display_labels= ['Healthy','Cancer'])
+    disp.plot()
+    plt.show()
 
 def run_T_V_model(model,trainLabel,trainData,validLabel,validData):
     model.fit(trainData, trainLabel.ravel())
